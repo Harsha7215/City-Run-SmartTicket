@@ -412,7 +412,17 @@ def get_routes():
     conn = get_db()
     routes = conn.execute("SELECT * FROM routes").fetchall()
     conn.close()
-    return jsonify([dict(r) for r in routes])
+    result = [dict(r) for r in routes]
+    
+    # If database is empty, seed and try again
+    if len(result) == 0:
+        init_db()
+        conn = get_db()
+        routes = conn.execute("SELECT * FROM routes").fetchall()
+        conn.close()
+        result = [dict(r) for r in routes]
+    
+    return jsonify(result)
 
 @app.route('/api/stops', methods=['GET'])
 def get_all_stops():
@@ -616,3 +626,10 @@ if __name__ == '__main__':
     print("🚌 Server: http://localhost:5000")
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
+
+    @app.route('/api/routes', methods=['GET'])
+    def get_routes():
+    conn = get_db()
+    routes = conn.execute("SELECT * FROM routes").fetchall()
+    conn.close()
+    return jsonify([dict(r) for r in routes])
