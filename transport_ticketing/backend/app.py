@@ -20,9 +20,9 @@ app = Flask(__name__, template_folder='../frontend/templates', static_folder='..
 app.secret_key = 'tsrtc_hyd_2024_secret_jwt'
 CORS(app)
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '../database/transport.db')
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../database/transport.db')
 
-# ─── JWT (lightweight, no extra library) ─────────────────────────────────────
+# ─── JWT ──────────────────────────────────────────────────────────────────────
 
 JWT_SECRET = 'tsrtc_jwt_secret_2024_hyderabad'
 
@@ -169,11 +169,9 @@ def _seed_default_users(c, conn):
     c.execute("SELECT COUNT(*) FROM users WHERE role='conductor'")
     if c.fetchone()[0] > 0:
         return
-    # Default conductor
     c.execute("INSERT INTO users (name, email, phone, password_hash, role) VALUES (?,?,?,?,?)",
               ('TSRTC Conductor', 'conductor@tsrtc.in', '9000000000',
                hash_password('conductor123'), 'conductor'))
-    # Demo passenger
     c.execute("INSERT INTO users (name, email, phone, password_hash, role) VALUES (?,?,?,?,?)",
               ('Demo User', 'demo@tsrtc.in', '9876543210',
                hash_password('demo123'), 'passenger'))
@@ -225,13 +223,17 @@ def _seed_routes(c, conn):
     random.seed(42)
     stops_sample = ["Secunderabad","Ameerpet","MGBS","Charminar","LB Nagar","Hitec City","Miyapur"]
     for _ in range(200):
-        hour = random.randint(0,23)
-        crowd = min(100, max(0, int(30 + 60*abs(hour-9)/9 if hour<12 else 30+60*abs(hour-18)/6 + random.randint(-10,10))))
+        hour = random.randint(0, 23)
+        crowd = min(100, max(0, int(30 + 60*abs(hour-9)/9 if hour < 12 else 30+60*abs(hour-18)/6 + random.randint(-10, 10))))
         c.execute("""INSERT INTO travel_history (route_id,from_stop,to_stop,travel_date,travel_time,passengers,crowd_level)
                      VALUES (?,?,?,?,?,?,?)""",
-                  (random.randint(1,6), random.choice(stops_sample), random.choice(stops_sample),
-                   "2024-01-15", f"{hour:02d}:00", random.randint(1,4), crowd))
+                  (random.randint(1, 6), random.choice(stops_sample), random.choice(stops_sample),
+                   "2024-01-15", f"{hour:02d}:00", random.randint(1, 4), crowd))
     conn.commit()
+
+# ─── Initialize DB on startup (runs on Render too) ────────────────────────────
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+init_db()
 
 # ─── AUTH ROUTES ──────────────────────────────────────────────────────────────
 
@@ -309,7 +311,6 @@ def me(user):
 def conductor_scan(user):
     data = request.json or {}
     raw = data.get('booking_id', '').strip().upper()
-    # Strip TSRTC: prefix if scanned from QR
     booking_id = raw.replace('TSRTC:', '')
 
     if not booking_id:
@@ -324,7 +325,6 @@ def conductor_scan(user):
 
     b = dict(b)
 
-    # Check expiry
     if b['qr_expires_at']:
         try:
             if datetime.fromisoformat(b['qr_expires_at']) < datetime.now():
@@ -346,7 +346,6 @@ def conductor_scan(user):
         return jsonify({'valid': False, 'message': '⚠️ Passenger already boarded', 'status': 'duplicate',
                         'booking': _safe_booking(b)})
 
-    # Mark as boarded
     now_iso = datetime.now().isoformat()
     conn.execute("UPDATE bookings SET status='boarded', boarded_at=?, scanned_by=? WHERE booking_id=?",
                  (now_iso, user['sub'], booking_id))
@@ -428,10 +427,10 @@ def get_all_stops():
 @app.route('/api/fare', methods=['POST'])
 def calculate_fare():
     data = request.json
-    route_id   = data.get('route_id')
-    from_stop  = data.get('from_stop')
-    to_stop    = data.get('to_stop')
-    passengers = data.get('passengers', 1)
+    route_id    = data.get('route_id')
+    from_stop   = data.get('from_stop')
+    to_stop     = data.get('to_stop')
+    passengers  = data.get('passengers', 1)
     travel_time = data.get('travel_time', '10:00')
 
     conn = get_db()
@@ -489,7 +488,6 @@ def book_ticket():
         booking_id = str(uuid.uuid4())[:8].upper()
         expires_at = (datetime.now() + timedelta(minutes=30)).isoformat()
 
-        # QR encodes the booking_id — conductor scans this
         qr_data = f"TSRTC:{booking_id}"
         qr = qrcode.QRCode(version=1, box_size=6, border=3)
         qr.add_data(qr_data)
@@ -512,7 +510,8 @@ def book_ticket():
             INSERT INTO travel_history
               (route_id, from_stop, to_stop, travel_date, travel_time, passengers, crowd_level)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (route_id, data['from_stop'], data['to_stop'], data['travel_date'], data['travel_time'], passengers, 50))
+        """, (route_id, data['from_stop'], data['to_stop'], data['travel_date'],
+              data['travel_time'], passengers, 50))
         conn.commit()
         conn.close()
 
@@ -610,8 +609,6 @@ def expire_check():
     return jsonify({'status': 'expired'})
 
 if __name__ == '__main__':
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    init_db()
     print("✅ Database initialized")
     print("🔐 Auth: POST /api/auth/login  |  POST /api/auth/register")
     print("📷 Conductor panel: http://localhost:5000/conductor")
