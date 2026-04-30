@@ -20,8 +20,7 @@ app = Flask(__name__, template_folder='../frontend/templates', static_folder='..
 app.secret_key = 'tsrtc_hyd_2024_secret_jwt'
 CORS(app)
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../database/transport.db')
-
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'transport.db')
 # ─── JWT ──────────────────────────────────────────────────────────────────────
 
 JWT_SECRET = 'tsrtc_jwt_secret_2024_hyderabad'

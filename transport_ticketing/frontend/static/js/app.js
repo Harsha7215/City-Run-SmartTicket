@@ -1,6 +1,6 @@
 /* ─── app.js — TSRTC SmartTicket Frontend ─── */
 
-const API = 'http://localhost:5000';
+const API = '';
 
 let routesData = [];
 let currentRouteIdx = 0;
