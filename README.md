@@ -1,20 +1,23 @@
-# 🚍 TSRTC SmartTicket
+# 🏨 Hotel Royal Stay
 
-> Intelligent bus ticketing system with QR validation and machine learning — built for the Hyderabad TSRTC network.
+> Production-grade hotel management system with AI room recommendations, Razorpay payments, and real-time analytics — built for Hyderabad's premium hospitality experience.
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)
-![Flask](https://img.shields.io/badge/Flask-2.x-black?logo=flask)
-![SQLite](https://img.shields.io/badge/Database-SQLite-lightgrey?logo=sqlite)
-![scikit-learn](https://img.shields.io/badge/ML-scikit--learn-orange?logo=scikit-learn)
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-5.1-092E20?logo=django&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![Razorpay](https://img.shields.io/badge/Payments-Razorpay-02042B?logo=razorpay&logoColor=white)
+![Render](https://img.shields.io/badge/Deployed-Render-46E3B7?logo=render&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
 ## 📌 Overview
 
-**TSRTC SmartTicket** is a full-stack web application that lets passengers book bus tickets online and receive **QR-code-based tickets with dynamic expiry**, ensuring efficient and fraud-resistant travel across Hyderabad's TSRTC network.
+**Hotel Royal Stay** is a full-stack Django web application that allows guests to browse rooms, make bookings, and pay securely — while giving hotel admins a powerful dashboard to track revenue, occupancy, and guest analytics.
 
-The system integrates **machine learning models** to enhance decision-making — including fare prediction, crowd estimation, route recommendation, and peak-hour detection.
+The system integrates an **AI-powered room recommendation engine** that scores rooms based on guest ratings and pricing to deliver personalized suggestions.
+
+🌐 **Live Demo:** [hotel-royal-stay.onrender.com](https://hotel-royal-stay.onrender.com)
 
 ---
 
@@ -26,54 +29,71 @@ The system integrates **machine learning models** to enhance decision-making —
 
 ## 🏗️ Architecture
 
-The application follows a **monolithic full-stack architecture** with clear separation of concerns:
-
 ```
-Frontend (HTML/JS/CSS)
-       ↓
-Backend (Flask REST APIs)
-       ↓
-Database (SQLite) + ML Layer (scikit-learn) + QR System
+Frontend (Bootstrap 5 + Chart.js + Font Awesome)
+               ↓
+Backend (Django Views + Django REST Framework)
+               ↓
+Database (SQLite dev / PostgreSQL prod) + Razorpay API + AI Recommendation Engine
 ```
 
 ---
 
 ## 🧰 Tech Stack
 
-| Layer     | Technology                                 |
-|-----------|--------------------------------------------|
-| Frontend  | HTML5, CSS3, JavaScript, Chart.js          |
-| Backend   | Python, Flask, Flask-CORS                  |
-| Database  | SQLite                                     |
-| QR Code   | `qrcode`, Pillow                           |
-| ML Models | scikit-learn (Linear Regression, Random Forest, Decision Tree) |
+| Layer       | Technology                                              |
+|-------------|---------------------------------------------------------|
+| Frontend    | HTML5, CSS3, Bootstrap 5, Chart.js, Font Awesome        |
+| Backend     | Python, Django 5.1, Django REST Framework               |
+| Auth        | Django Auth + SimpleJWT                                 |
+| Database    | SQLite (development) / PostgreSQL (production)          |
+| Payments    | Razorpay (UPI, Cards, Net Banking)                      |
+| Static Files| WhiteNoise                                              |
+| Server      | Gunicorn                                                |
+| Deployment  | Render                                                  |
 
 ---
 
 ## 🎯 Features
 
-### 🎫 Ticket Booking
-- Supports multiple TSRTC routes with 10–20 stops
-- Automatic fare calculation using ML
-- QR code generation with **30-minute expiry**
-- Real-time countdown timer with visual alerts
+### 🛏️ Room Management
+- Browse rooms with real-time availability search
+- Filter by dates, guest count, and room type
+- Room detail pages with amenities, capacity, and reviews
+- Status tracking — Available / Occupied / Maintenance
 
-### 🛣️ Routes & Stops
-- Forward and return journey toggle
-- Live stop search functionality
+### 📅 Smart Booking System
+- Date conflict detection and validation
+- Guest count enforcement per room capacity
+- Special requests support
+- Full booking history and management
 
-### 📊 Ticket Management
-- Booking history tracking
-- Active vs. expired ticket status
-- User analytics dashboard
+### 💳 Razorpay Payment Integration
+- UPI, Credit/Debit Cards, Net Banking support
+- Secure transaction handling
+- Payment status tracking
+- Booking confirmation on payment success
 
-### 🤖 Machine Learning
-| Model | Algorithm | Purpose |
-|-------|-----------|---------|
-| Fare Prediction | Linear Regression | Estimate ticket cost |
-| Crowd Estimation | Regression | Predict bus occupancy |
-| Route Recommendation | Random Forest | Suggest optimal routes |
-| Peak Hour Detection | Decision Tree | Flag high-traffic periods |
+### 📊 Admin Analytics Dashboard
+- Revenue trend charts with Chart.js
+- Occupancy rate tracking
+- Booking analytics by date and room type
+- Guest statistics overview
+
+### 🤖 AI Room Recommendations
+
+| Feature | Logic | Purpose |
+|---------|-------|---------|
+| Rating Score | Average guest rating | Prefer highly rated rooms |
+| Price Score | Value-for-money index | Balance cost and quality |
+| Availability Check | Real-time date filtering | Only show bookable rooms |
+| Combined Ranking | Weighted scoring | Personalized suggestions |
+
+### 👥 Role-Based Access
+- Admin / Staff / Customer roles
+- JWT Authentication for REST API
+- Django session auth for web interface
+- Secure login, logout, and profile management
 
 ---
 
@@ -81,57 +101,61 @@ Database (SQLite) + ML Layer (scikit-learn) + QR System
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/routes` | Fetch available routes |
-| POST | `/api/fare` | Predict fare |
-| POST | `/api/book` | Book a ticket |
-| GET | `/api/predict/*` | ML predictions |
-| GET | `/api/bookings` | Ticket history |
+| GET | `/api/rooms/` | List all rooms |
+| GET | `/api/rooms/<id>/` | Room detail |
+| GET/POST | `/api/bookings/` | Bookings CRUD |
+| POST | `/api/token/` | Obtain JWT token |
+| POST | `/api/token/refresh/` | Refresh JWT token |
 
 ---
 
 ## 🗂️ Project Structure
 
 ```
-transport_ticketing/
-├── backend/          # Flask app, routes, API logic
-├── frontend/         # HTML, CSS, JS files
-├── ml_models/        # Trained ML models
-├── database/         # SQLite schema and seed data
-├── requirements.txt
-└── README.md
+Hotel-Royal-stay/
+├── hotel/                  # Main app — models, views, forms, URLs
+├── accounts/               # Auth app — login, register, profile
+├── hotel_management/       # Project config — settings, URLs, wsgi
+├── templates/              # HTML templates
+│   ├── base.html
+│   ├── hotel/
+│   └── accounts/
+├── static/                 # CSS, images, JS
+│   ├── css/style.css
+│   └── images/
+├── seed_data.py            # Sample data seeder
+├── manage.py
+├── Procfile
+├── runtime.txt
+└── requirements.txt
 ```
 
 ---
 
 ## ▶️ Getting Started
 
-Follow these steps carefully to run the project on your laptop.
+Follow these steps to run the project locally.
 
 ---
 
 ### Step 1 — Install Python
 
-Make sure Python 3.10 or above is installed on your system.
+Make sure Python 3.11 or above is installed.
 
 - Download from: https://www.python.org/downloads/
-- During installation on Windows, **check the box that says "Add Python to PATH"**
-- To verify installation, open a terminal (Command Prompt on Windows, Terminal on Mac/Linux) and run:
+- On Windows, **check "Add Python to PATH"** during installation
+- Verify:
 
 ```bash
 python --version
 ```
 
-You should see something like `Python 3.11.x`.
-
 ---
 
 ### Step 2 — Install Git
 
-Git is needed to download (clone) the project.
-
 - Download from: https://git-scm.com/downloads
-- Install with default settings
-- To verify, run:
+- Verify:
 
 ```bash
 git --version
@@ -141,55 +165,65 @@ git --version
 
 ### Step 3 — Clone the Repository
 
-This downloads the project files to your laptop.
-
 ```bash
-git clone https://github.com/your-username/transport_ticketing.git
+git clone https://github.com/Harsha7215/Hotel-Royal-stay.git
 ```
-
-> Replace `your-username` with the actual GitHub username.
 
 ---
 
 ### Step 4 — Open the Project Folder
 
 ```bash
-cd transport_ticketing
+cd Hotel-Royal-stay
 ```
 
 ---
 
-### Step 5 — Install Dependencies
+### Step 5 — Create Virtual Environment
 
-This installs all the Python libraries the project needs.
+```bash
+# Windows
+python -m venv .venv
+.venv\Scripts\activate
+
+# Mac / Linux
+python -m venv .venv
+source .venv/bin/activate
+```
+
+---
+
+### Step 6 — Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-> If `pip` doesn't work, try `pip3 install -r requirements.txt`
-
 ---
 
-### Step 6 — Run the Application
+### Step 7 — Run Migrations and Seed Data
 
 ```bash
-python run.py
+python manage.py migrate
+python seed_data.py
+python manage.py createsuperuser
 ```
-
-> If `python` doesn't work, try `python3 run.py`
 
 ---
 
-### Step 7 — Open in Browser
+### Step 8 — Start the Server
 
-Once the server starts, open your browser and go to:
-
-```
-http://localhost:5000
+```bash
+python manage.py runserver
 ```
 
-You should see the TSRTC SmartTicket app running locally.
+Open your browser at:
+
+```
+http://127.0.0.1:8000
+```
+
+> 🔑 Admin panel: **http://127.0.0.1:8000/admin**
 
 ---
 
@@ -198,70 +232,102 @@ You should see the TSRTC SmartTicket app running locally.
 | Problem | Fix |
 |---------|-----|
 | `python` not recognized | Reinstall Python and check "Add to PATH" |
-| `pip` not recognized | Use `pip3` instead, or reinstall Python |
-| Port 5000 already in use | Change the port in `run.py` to `5001` |
-| Module not found error | Run `pip install -r requirements.txt` again |
+| `pip` not recognized | Use `pip3` instead |
+| Port already in use | Stop other servers or use `runserver 8001` |
+| Module not found | Run `pip install -r requirements.txt` again |
+
+---
+
+## 🌍 Deployment
+
+This project is deployed on **Render** with PostgreSQL.
+
+### Environment Variables
+
+| Variable | Description |
+|---|---|
+| `DJANGO_SECRET_KEY` | Django secret key |
+| `DEBUG` | `False` in production |
+| `ALLOWED_HOSTS` | Your domain name |
+| `CSRF_TRUSTED_ORIGINS` | `https://yourdomain.onrender.com` |
+| `DATABASE_URL` | PostgreSQL connection URL |
+| `RAZORPAY_KEY_ID` | Razorpay API key |
+| `RAZORPAY_KEY_SECRET` | Razorpay secret key |
+
+### Build and Start Commands
+
+```bash
+# Build
+pip install -r requirements.txt
+
+# Start
+sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn hotel_management.wsgi --log-file -"
+```
 
 ---
 
 ## 🔐 Current Limitations
 
-- No user authentication (planned)
-- Basic input validation only
-- SQLite limits production scalability
+- Media uploads (room images) not persistent on free hosting
+- Razorpay in test mode only
+- Free tier spins down after inactivity
 
 ---
 
 ## 🚀 Planned Enhancements
 
 ### Scalability & Performance
-- Migrate to PostgreSQL / MySQL
-- Introduce Redis caching
-- Migrate to FastAPI (async backend)
+- Migrate media storage to AWS S3 / Cloudinary
+- Redis caching for room availability queries
+- Celery for async email notifications
 
 ### Security
-- JWT-based authentication
-- Role-based access: Admin / User / Conductor
-- HTTPS and API rate limiting
+- Two-factor authentication
+- OAuth login (Google, GitHub)
+- API rate limiting
 
 ### Real-Time Features
-- Live bus tracking via WebSockets
-- ETA prediction and push notifications (ticket expiry, arrivals)
+- Live room availability via WebSockets
+- Push notifications for booking updates
+- Real-time admin alerts for new bookings
 
 ### Payments
-- UPI / Card payment integration
-- Payment confirmation before ticket generation
-
-### QR Validation
-- Conductor-side QR scanner app
-- Real-time ticket validation
+- Stripe integration (international cards)
+- Invoice PDF generation
+- Automated refund processing
 
 ### ML Improvements
-- LSTM for time-series crowd prediction
-- Dynamic surge pricing model
-- Automated model retraining pipeline
-- Feature expansion: weather, events, holidays
+- Collaborative filtering for recommendations
+- Dynamic pricing based on demand
+- Sentiment analysis on guest reviews
 
 ### Frontend
-- Responsive mobile-first UI
 - Progressive Web App (PWA)
-- Offline ticket access
+- Mobile app with React Native
+- Dark/light theme toggle
 
 ---
 
 ## 🌟 Key Highlights
 
-- Full-stack development (Frontend + Backend + ML)
-- Solves a real-world public transport problem
-- End-to-end API design and system architecture
-- Machine learning integration with practical use cases
-- Extensible, modular design ready for production upgrades
+- Full-stack development (Frontend + Backend + REST API)
+- Solves a real-world hotel management problem
+- End-to-end payment integration with Razorpay
+- AI recommendation engine with practical use cases
+- Production deployment with PostgreSQL on Render
+- Clean, luxury UI with Cormorant Garamond typography
 
 ---
 
 ## 🤝 Contributing
 
 Contributions are welcome! Please open an issue first to discuss what you'd like to change, then submit a pull request.
+
+---
+
+## 👨‍💻 Author
+
+**Harsha** — [GitHub @Harsha7215](https://github.com/Harsha7215)
 
 ---
 
