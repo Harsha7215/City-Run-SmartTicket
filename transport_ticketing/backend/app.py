@@ -494,8 +494,7 @@ def book_ticket():
         user_id = user['sub'] if user else None
 
         booking_id = str(uuid.uuid4())[:8].upper()
-        expires_at = (datetime.now() + timedelta(minutes=30)).isoformat()
-
+        expires_at = (datetime.now() + timedelta(hours=24)).isoformat()
         qr_data = f"TSRTC:{booking_id}"
         qr = qrcode.QRCode(version=1, box_size=6, border=3)
         qr.add_data(qr_data)
@@ -537,7 +536,7 @@ def get_booking(booking_id):
     if not b:
         return jsonify({'error': 'Not found'}), 404
     b = dict(b)
-    if b['qr_expires_at'] and datetime.fromisoformat(b['qr_expires_at']) < datetime.now():
+    if b['qr_expires_at'] and datetime.fromisoformat(b['qr_expires_at'].split('.')[0]) < datetime.now():
         conn = get_db()
         conn.execute("UPDATE bookings SET status='expired' WHERE booking_id=?", (booking_id,))
         conn.commit()
